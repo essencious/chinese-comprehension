@@ -1,4 +1,5 @@
 import re, jieba, argparse
+from LAC import LAC
 from collections import Counter
 from re import compile as _Re
 import core.shared as shared
@@ -39,6 +40,7 @@ print("Initializing dictionary...", end="\r")
 jieba.initialize()
 print("Initializing dictionary... \033[94mdone\033[0m\n")
 
+lac = LAC(mode='seg')
 
 _unicode_chr_splitter = _Re("(?s)((?:[\ud800-\udbff][\udc00-\udfff])|.)").split
 
@@ -59,6 +61,8 @@ def comprehension_checker(
         wordlist = open(knownfile, "r")  # filename of your known words here
     except KeyError as ke:
         raise ke
+    
+    # lac.load_customization(knownfile, sep=None)
 
     known_words = set(
         re.sub("\s+", "\n", wordlist.read()).split("\n")
@@ -78,7 +82,8 @@ def comprehension_checker(
     character_word_text = ""
     if mode == "smart":
         character_word_text = "Words"
-        target_text_content = list(jieba.cut(target_text_content))  # split using jieba
+        # target_text_content = list(jieba.cut(target_text_content))  # split using jieba
+        target_text_content = list(lac.run(target_text_content))  # split using LAC
     elif mode == "simple":
         character_word_text = "Characters"
         target_text_content = split_unicode_chrs(target_text_content)
@@ -129,6 +134,8 @@ def comprehension_checker(
             + f"{total_unique_words}"
             "\n\033[92mComprehension: \033[0m"
             + f"{crosstext_count/target_length * 100:.3f}%"
+            + "\n\033[92mUnique Unknown " + f"{character_word_text}" + ": \033[0m"
+            + f"{unknown_word_counter}"
         )
 
 def sort_by_count(e):

@@ -1,4 +1,5 @@
 import re, jieba, argparse
+from LAC import LAC
 from collections import Counter
 from re import compile as _Re
 import core.shared as shared
@@ -27,6 +28,7 @@ print("Initializing dictionary...", end="\r")
 jieba.initialize()
 print("Initializing dictionary... \033[94mdone\033[0m\n")
 
+lac = LAC(mode='seg')
 
 _unicode_chr_splitter = _Re("(?s)((?:[\ud800-\udbff][\udc00-\udfff])|.)").split
 
@@ -51,7 +53,11 @@ def text_analyzer(
 
     target_text_content = shared.text_clean_up(target_text)
 
-    target_word_content = list(jieba.cut(target_text_content))  # split using jieba
+    target_word_content = list(lac.run(target_text_content))  # split using lac
+
+    # target_word_content = list(jieba.cut(target_text_content))  # split using jieba
+
+    # print(target_word_content)
     counted_target_word = Counter(target_word_content)
     total_unique_words = len(counted_target_word)
 
@@ -79,6 +85,13 @@ def text_analyzer(
         "\n\033[92mTotal Unique Characters: \033[0m"
         + f"{shared.round_to_nearest_50(total_unique_characters)}"
     )
+
+    # return (
+    #     "\n\033[92mTotal Unique Words: \033[0m"
+    #     + f"{total_unique_words}"
+    #     "\n\033[92mTotal Unique Characters: \033[0m"
+    #     + f"{total_unique_characters}"
+    # )
 
 if __name__ == "__main__":
     print(text_analyzer(args.target, args.output))
